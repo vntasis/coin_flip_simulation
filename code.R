@@ -26,14 +26,16 @@ flips <- rbinom(n_iter, n_trials, 0.5)
 for (i in 1:n_iter){
   if (i%%1000 == 0) print(i)
 
-  flps <-
-    tibble(Number_of_heads = factor(as.character(flips[1:i]), levels=as.character(1:n_trials))) %>%
-    group_by(Number_of_heads, .drop = FALSE) %>%
-    summarise(frequency= n()) %>%
-    mutate(iter=as.integer(rep(i,n_trials)))
+  if (i%%10 == 0){
+    flps <-
+      tibble(Number_of_heads = factor(as.character(flips[1:i]), levels=as.character(1:n_trials))) %>%
+      group_by(Number_of_heads, .drop = FALSE) %>%
+      summarise(frequency= n()) %>%
+      mutate(iter=as.integer(rep(i,n_trials)))
 
-  flips_freq <-
-    rbind(flips_freq, flps)
+    flips_freq <-
+      rbind(flips_freq, flps)
+  }
 
 }
 
@@ -42,6 +44,7 @@ g <- flips_freq %>%
   ggplot(aes(Number_of_heads, frequency)) +
   geom_bar(stat = 'identity') +
   transition_states(iter) +
-  labs(title = "Iteration: {closest_state}")
+  labs(title = "Iteration: {closest_state}") + 
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=25))
 
-animate(g + enter_fade() + exit_shrink(), fps = 50, nframes = 2000)
+animate(g + enter_fade() + exit_shrink(), fps = 20, nframes = 200)
