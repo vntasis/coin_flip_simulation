@@ -1,41 +1,47 @@
-#*****************************************************
-## Code for the p-value presentation for retreat 2020*
-#*****************************************************
+#*********************************************************************
+## Make an animated simulation with a barplot illustrating           *
+## the number of successes in a sequence of n independent coin flips.*
+#*********************************************************************
 
-
+# Load required libraries
 library(ggplot2)
 library(gganimate)
 library(magrittr)
 library(tibble)
 library(dplyr)
 
+# Set the number of trials and the number of iterations of the simulation
+n_trials <- 20
+n_iter <- 1000
 
-n <- 20
-n_trials <- 1000
-flips_freq <- 
-  tibble(Number_of_heads=as.factor(1:n), frequency=rep(0,n), trials=as.integer(rep(0,n)))
+# Initialize the tibble that will store the results
+flips_freq <-
+  tibble(Number_of_heads=as.factor(1:n_trials), frequency=rep(0,n_trials), iter=as.integer(rep(0,n_trials)))
 
-flips <- rbinom(n_trials, n, 0.5)
+# Generate the simulated data from a binomial distribution
+set.seed(13)
+flips <- rbinom(n_iter, n_trials, 0.5)
 
-for (i in 1:n_trials){
+# Calculate the cumulative frequency of successes for every iteration of the simulation
+for (i in 1:n_iter){
   if (i%%1000 == 0) print(i)
 
   flps <-
-    tibble(Number_of_heads = factor(as.character(flips[1:i]), levels=as.character(1:n))) %>% 
-    group_by(Number_of_heads, .drop = FALSE) %>% 
+    tibble(Number_of_heads = factor(as.character(flips[1:i]), levels=as.character(1:n_trials))) %>%
+    group_by(Number_of_heads, .drop = FALSE) %>%
     summarise(frequency= n()) %>%
-    mutate(trials=as.integer(rep(i,n)))
+    mutate(iter=as.integer(rep(i,n_trials)))
 
   flips_freq <-
     rbind(flips_freq, flps)
 
 }
 
-
+# Make the animation of the simulation
 g <- flips_freq %>%
   ggplot(aes(Number_of_heads, frequency)) +
-  geom_bar(stat = 'identity') + 
-  transition_states(trials) +
-  labs(title = "Trials: {closest_state}")
+  geom_bar(stat = 'identity') +
+  transition_states(iter) +
+  labs(title = "Iteration: {closest_state}")
 
-#animate(g + enter_fade() + exit_shrink(), fps = 50, nframes = 2000)
+animate(g + enter_fade() + exit_shrink(), fps = 50, nframes = 2000)
