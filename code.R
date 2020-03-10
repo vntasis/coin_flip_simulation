@@ -48,3 +48,26 @@ g <- flips_freq %>%
   theme(axis.text=element_text(size=15), axis.title=element_text(size=25))
 
 animate(g + enter_fade() + exit_shrink(), fps = 20, nframes = 200)
+
+
+# Make plots marking the area of the p-value
+
+g1 <- flips_freq %>%
+  filter(iter==1000) %>%
+  mutate(Significance=c("False", "True")[(.$Number_of_heads %>% as.character %>% as.numeric >= 14) %>% as.numeric %>% `+`(1)]) %>%
+  ggplot(aes(Number_of_heads, frequency, fill = Significance)) +
+  geom_bar(stat = 'identity') +
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=25), legend.position = "none") + 
+  scale_fill_manual(values=c("grey30", "red"))
+
+g2 <- flips_freq %>%
+  filter(iter==1000) %>%
+  mutate(Significance=c("False", "True")[(.$Number_of_heads %>% as.character %>% as.numeric >= 15) %>% as.numeric %>% `+`(1)]) %>%
+  ggplot(aes(Number_of_heads, frequency, fill = Significance)) +
+  geom_bar(stat = 'identity') +
+  theme(axis.text=element_text(size=15), axis.title=element_text(size=25), legend.position = "none") + 
+  scale_fill_manual(values=c("grey30", "red"))
+
+pdf("p_value_area.pdf")
+gridExtra::grid.arrange(g1, g2, nrow=1)
+dev.off()
